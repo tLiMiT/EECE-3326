@@ -6,10 +6,8 @@
 //
 // Header file for Project 1. Contains class code functions.
 // Constructor, setCode, getCode, guess and checkCorrect.
-// checkIncorrect.
 
 #include "d_random.h"
-//#include "d_except.h"
 #include <iostream>
 #include <vector>
 
@@ -19,13 +17,12 @@ class code
 {
 public:
 	// Constructor:
-	code(int length, int range);
+	code(int length = 5, int range = 10);
 	// code operations:
+	void setCode();
 	void getCode();
 	void guess();
 	int checkCorrect();
-	int checkIncorrect();
-	friend ostream &operator<<(ostream &ostr, code &cde);
 private:
 	int m, n;				// size of length and range
 	vector<int> randCode;	// Random Code vector
@@ -37,6 +34,16 @@ code::code(int length, int range)
 	:n(length), m(range)
 {}
 
+void code::setCode()
+// Set code length and digit range
+{
+	cout << "Enter code length (n) and digit range (m)" << endl;
+	cout << "n: ";
+	cin >> n;
+	cout << "m: ";
+	cin >> m;
+} // end setCode
+
 void code::getCode()
 // Generate random code vector of length n
 // Output random code vector
@@ -47,6 +54,8 @@ void code::getCode()
 	for (i = 0; i < n; i++)
 	{
 		randCode.push_back(rand.random(m));
+
+		cout << randCode[i];
 	} // end for
 } // end getCode
 	
@@ -85,59 +94,3 @@ int code::checkCorrect()
 	return count;
 
 } // end checkCorrect
-
-int code::checkIncorrect()
-{
-	int i, u, count = 0;
-	vector<bool> used(n);
-
-	for(i = 0; i < n; i++)
-	{
-		if (randCode[i] == inputVect[i])
-		{
-			used[i] = true;
-		} //end if
-		else
-		{
-			for (u = 0; u < n; u++)
-			{
-				do {
-					if (randCode[i] == inputVect[u])
-					{
-						used[u] = true;
-						count += 1;
-					}
-				} while (used[u] != true); // end do while
-			} // end for
-		} // end else
-	} // end for
-
-	return count;
-
-} // end checkIncorrect
-
-
-// overloaded output operator
-ostream &operator<<(ostream &ostr, code &cde)
-{
-	int i;
-	ostr << "< ";
-	for (i = 0; i < cde.n; i++)
-	{
-		ostr << cde.randCode[i] << " ";
-	} // end for
-	ostr << ">";
-	return ostr;
-}
-
-ostream &operator<<(ostream &ostr, vector<int> &v1)
-{
-	int i;
-	ostr << "< ";
-	for (i = 0; i < v1.size(); i++)
-	{
-		ostr << v1[i] << " ";
-	} // end for
-	ostr << ">";
-	return ostr;
-}
