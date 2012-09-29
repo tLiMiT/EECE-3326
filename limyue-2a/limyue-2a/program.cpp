@@ -16,7 +16,10 @@ int main()
 {
 	try
 	{
+		deck dk;
 
+		// prints a deck of cards
+		cout << dk;
 	}
 	catch (rangeError &re)
 	{
