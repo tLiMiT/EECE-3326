@@ -7,7 +7,8 @@
 /* dictionary.h Header file for Project 3.
    
    Contains dictionary class functions:
-   
+   default constructor, constructor, wordLookup,
+   printDict
 */
 
 #include <iostream>
@@ -20,17 +21,17 @@ using namespace std;
 class dictionary
 {
 public:
-	dictionary();
-	dictionary(const string &dfln);
-	bool wordLookup(string word) const;
-	void printDict();
+	dictionary();						// default constructor
+	dictionary(const string &dfln);		// constructor
+	bool wordLookup(string word) const;	// finds a word in the dictionary
+	void printDict();					// prints the dictionary
 private:
 	void readDict(string fln);
 	vector<string> wordVect;
 };
 
 
-/* dictionary constructor */
+/* dictionary default constructor */
 dictionary::dictionary()
 {
 	readDict("dictionary");
@@ -52,7 +53,7 @@ void dictionary::readDict(string dfln)
 	{
 		throw fileOpenError(dfln);
 	}
-	cout << "Loading dictionary..." << endl;
+	cout << "Loading dictionary...";
 
 	////
 	while (getline(fin, word))
@@ -62,7 +63,7 @@ void dictionary::readDict(string dfln)
 	////
 
 	fin.close();
-	cout << "Dictionary loaded." << endl;
+	cout << '\r' << "Dictionary loaded.   " << endl;
 } // readDict
 
 /* find words in the dictionary */
@@ -79,7 +80,7 @@ bool dictionary::wordLookup(string w) const
 	return false;
 } // wordLookup
 
-/* print all words in the dictionary (not recommended) */
+/* print all words in the dictionary (sanity check, not recommended) */
 void dictionary::printDict()
 {
 	for (int i = 0; i < wordVect.size(); i++)

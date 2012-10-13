@@ -16,6 +16,8 @@
 
 using namespace std;
 
+int wordCount = 0;
+
 /* adjacentCheck function
    adjacentCheck checks for words around a letter in all directions
 */
@@ -30,10 +32,12 @@ void adjacentCheck(const dictionary &d,		// dictionary object
 	// make sure we will actually move from starting point
 	if (dX == 0 && dY == 0) { return; }
 
+	// set grid index
 	int x = row;
 	int y = col;
 	string currWord = g[x][y];
 
+	// find words that are longer than the minimum size
 	while (currWord.length() <= g.getSize())
 	{
 		if (currWord.length() >= minWL)
@@ -41,6 +45,7 @@ void adjacentCheck(const dictionary &d,		// dictionary object
 			if (d.wordLookup(currWord))
 			{
 				cout << currWord << endl;
+				wordCount++;
 			} // if
 		} // if
 
@@ -80,6 +85,8 @@ void findMatches(const dictionary &dict, const grid &grd)
 			adjacentCheck(dict, grd, j, i, -1, -1);
 		} // for
 	} // for
+	
+	cout << '\n' << wordCount << " words found." << endl;
 } // findMatches
 
 /* testSearch function
@@ -87,11 +94,13 @@ void findMatches(const dictionary &dict, const grid &grd)
 */
 void testSearch()
 {
+	/*
 	// get dictionary filename
 	string dictFN;
 	cout << "Input the dictionary filename: ";
 	cin >> dictFN;
 	dictionary dict(dictFN);
+	*/
 
 	// get grid filename
 	string gridFN;
@@ -100,7 +109,7 @@ void testSearch()
 	grid grd(gridFN);
 
 	// find all matching words in the grid
-	findMatches(dict, grd);
+	findMatches(dictionary(), grd);
 } // testSearch
 
 int main()

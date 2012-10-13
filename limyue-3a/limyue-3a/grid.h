@@ -7,7 +7,8 @@
 /* grid.h Header file for Project 3.
    
    Contains grid class functions:
-   
+   constructor, getSize, printGrid
+   overloaded [] operators
 */
 
 #include <iostream>
@@ -22,9 +23,10 @@ using namespace std;
 class grid
 {
 public:
-	grid(string gfln);
-	int getSize() const { return length; }
-	void printGrid();
+	grid(string gfln);						// constructor
+	int getSize() const { return length; }	// gets grid size
+	void printGrid();						// prints the grid
+
 	vector<string> &operator[](int i);
 	const vector<string> &operator[](int i) const;
 private:
@@ -43,7 +45,7 @@ grid::grid(string gfln)
 	{
 		throw fileOpenError(gfln);
 	}
-	cout << "Loading grid..." << endl;
+	cout << "Loading grid...";
 
 	////
 	string x_size;
@@ -63,9 +65,10 @@ grid::grid(string gfln)
 	////
 
 	fin.close();
-	cout << "Grid loaded." << endl;
+	cout << '\r' << "Grid loaded.    " << endl;
 } // grid constructor
 
+/* allows grid indexing */
 vector<string> &grid::operator[](int i)
 {
 	if (i < 0 || i >= length)
@@ -76,6 +79,7 @@ vector<string> &grid::operator[](int i)
 	return mtx[i];
 } // operator
 
+/* allows grid indexing */
 const vector<string> &grid::operator[](int i) const
 {
 	if (i < 0 || i >= length)
