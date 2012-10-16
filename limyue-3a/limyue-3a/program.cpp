@@ -133,4 +133,8 @@ int main()
 	{
 		cout << foe.what() << endl;
 	}
+	catch (indexRangeError &ire)
+	{
+		cout << ire.what() << endl;
+	}
 } // main
