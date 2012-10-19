@@ -8,7 +8,7 @@ Project #2
 Write a program that allows the user to play the card game flip. Flip is played by one player with
 a standard deck of 52 cards. The game has the following steps:
 
-  1. The cards are shuffed three times.
+  1. The cards are shuffled three times.
 
   2. The player keeps taking cards until the player decides to stop and end the game.
 
