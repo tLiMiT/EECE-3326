@@ -36,7 +36,7 @@ and an overloaded print operator.
 
 Fully implement a deck class that stores the cards in a deck in order. A deck of cards should be
 implemented using a linked list of nodes, each of which contains a single card. The deck object
-should contain a pointer to the rst card in the deck. The class should at least include a constructor
+should contain a pointer to the first card in the deck. The class should at least include a constructor
 that creates a deck with all the cards in order (2-A, clubs to spades) and an overloaded operator
 that prints the cards in the deck.
 
