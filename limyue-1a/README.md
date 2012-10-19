@@ -36,9 +36,13 @@ Part a
 
 In the first part of the project, implement the class code which stores the code as a vector. No
 error-checking is necessary. Implement:
+
 	1. the code class declaration,
+
 	2. a constructor that is passed values n and m and which initializes the random code,
+
 	3. a function checkCorrect which is passed a guess as a parameter and which returns the
 		number of correct digits in the correct location,
+
 	4. a function main which initializes a code, prints it out, and prints out the result of calling
 		checkCorrect for three sample inputs.
