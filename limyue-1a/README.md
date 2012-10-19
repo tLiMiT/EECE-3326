@@ -7,6 +7,7 @@ Project #1
 
 In this project, you will write a complete program that allows the user to play a game of Mastermind
 against the computer. A Mastermind game has the following steps:
+
 	1. The user is prompted to enter two integers, the code length n, and the range of digits m < 10.
 
 	2. The computer selects a code, a random sequence of n digits, each of which is in the range [0,m-1].
