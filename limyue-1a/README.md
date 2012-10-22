@@ -28,9 +28,8 @@ against the computer. A Mastermind game has the following steps:
 	5. The user is prompted to continue entering guesses. The user wins if the correct code is
 		guessed. The user loses if a predetermined maximum number of guesses has been made.
 
-Your program should be modular and should make full use of object-oriented programming tech-
-niques. Each class should clearly separate its interface from its implementation. Use member
-functions to implement all commonly used operations.
+Your program should be modular and should make full use of object-oriented programming techniques. Each class should clearly 
+separate its interface from its implementation. Use member functions to implement all commonly used operations.
 
 Part a
 
