@@ -13,8 +13,7 @@
 #include <iostream>
 #include <time.h>
 #include "grid.h"
-#include "quicksortedDictionary.h"
-//#include "selectionSortedDictionary.h"
+#include "dictionary.h"
 
 using namespace std;
 
@@ -44,7 +43,8 @@ void adjacentCheck(const dictionary &d,		// dictionary object
 	{
 		if (currWord.length() >= minWL)
 		{
-			if (d.wordLookup(currWord))
+			// use binarySearch to check if word is in the dictionary
+			if (d.binarySearch(0, d.getSize()-1, currWord))
 			{
 				cout << currWord << endl;
 				wordCount++;
@@ -66,7 +66,7 @@ void findMatches(const dictionary &dict, const grid &grd)
 	time_t start, end;
 	double diff;
 
-	cout << "Searching..." << endl;
+	cout << "Searching...\n" << endl;
 	time (&start);
 
 	for (int j = 0; j < grd.getSize(); j++)
@@ -104,13 +104,16 @@ void findMatches(const dictionary &dict, const grid &grd)
 */
 void testSearch()
 {
-	/*
+	
 	// get dictionary filename
+	/*
 	string dictFN;
 	cout << "Input the dictionary filename: ";
 	cin >> dictFN;
 	dictionary dict(dictFN);
 	*/
+	dictionary dict("dictionary");
+	dict.sort();
 
 	// get grid filename
 	string gridFN;
@@ -119,7 +122,7 @@ void testSearch()
 	grid grd(gridFN);
 
 	// find all matching words in the grid
-	findMatches(quicksortedDictionary(), grd);
+	findMatches(dict, grd);
 } // testSearch
 
 int main()

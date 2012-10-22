@@ -21,19 +21,10 @@
     <ClInclude Include="d_matrix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="dictionary.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="grid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="sortedDictionary.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="quicksortedDictionary.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="selectionSortedDictionary.h">
+    <ClInclude Include="dictionary.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -64,9 +64,6 @@
     <ClInclude Include="d_except.h" />
     <ClInclude Include="d_matrix.h" />
     <ClInclude Include="grid.h" />
-    <ClInclude Include="quicksortedDictionary.h" />
-    <ClInclude Include="selectionSortedDictionary.h" />
-    <ClInclude Include="sortedDictionary.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="KeepConsoleOpenAfterMain.cpp" />
