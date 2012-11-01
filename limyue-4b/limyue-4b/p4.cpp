@@ -1,5 +1,5 @@
 // EECE 3326
-// Project 4, a
+// Project 4, b
 //
 // Tim Liming
 // Wing Tung Yuen
@@ -32,6 +32,8 @@ const int MaxValue = 9;
 
 int numSolutions = 0;
 
+bool done = false;
+
 class board
 // Stores the entire Sudoku board
 {
@@ -49,6 +51,9 @@ public:
 	void setCell(int i, int j, int val);
 	void clearCell(int i, int j);
 	bool solvedBoard();
+
+	void solve(int i, int j);
+
 private:
 	// Added function
 	void updateConflicts(int i, int j, int num, bool val);
@@ -207,6 +212,53 @@ bool board::solvedBoard()
 	return true;
 } // solvedBoard
 
+void board::solve(int i=1, int j=1)
+// solve the sudoku board using recursion
+{
+	if (i > BoardSize)
+	{
+		done = true;
+		return;
+	}
+	if (!isBlank(i, j))
+	{
+		if (j < BoardSize)
+		{
+			solve(i, j+1);
+		}
+		else
+		{
+			solve(i+1, 1);
+		}
+	}
+	if (done)
+	{ 
+		// print? do something? we shall see
+		return;
+	}
+	else
+	{
+		for (int num = MinValue; num < MaxValue+1; num++)
+		{
+			if (!conflicts(i, j, num))
+			{
+				setCell(i, j, num);
+				if (j < BoardSize)
+				{
+					solve(i, j+1);
+				}
+				else
+				{
+					solve(i+1, 1);
+				}
+				if (done) { return; }
+				clearCell(i, j);
+			} // if
+		} // for
+	} // if-else
+} // solve
+
+
 void board::print()
 // Prints the current board.
 {
@@ -250,7 +302,6 @@ void board::print()
 	cout << "-";
 	cout << endl;
 } // print
-
 
 void board::printConflicts()
 // print each of the conflict matrices side by side
@@ -305,15 +356,16 @@ int main()
 		{
 			b1.initialize(fin);
 			b1.print();
-			b1.printConflicts();
-			if (b1.solvedBoard())
+			b1.solve();
+			b1.print();
+			/*if (b1.solvedBoard())
 			{
 				cout << "The board is solved.\n" << endl;
 			}
 			else if (! b1.solvedBoard())
 			{
 				cout << "The board is not solved.\n" << endl;
-			}
+			}*/
 		}
 	}
 	catch  (rangeError &ex)
