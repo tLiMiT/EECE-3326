@@ -14,6 +14,7 @@
 #include <list>
 #include <fstream>
 #include <cstdlib>
+#include <utility>
 
 using namespace std;
 
@@ -21,9 +22,9 @@ typedef int ValueType;		// The type of the value in a cell
 const int Blank = -1;		// Indicates that a cell is blank
 
 const int SquareSize = 3;	//  The number of cells in a small square
-							//  (usually 3).  The board has
-							//  SquareSize^2 rows and SquareSize^2
-							//  columns.
+//  (usually 3).  The board has
+//  SquareSize^2 rows and SquareSize^2
+//  columns.
 
 const int BoardSize = SquareSize * SquareSize;
 
@@ -32,10 +33,9 @@ const int MaxValue = 9;
 
 int numSolutions = 0;
 
-bool done = false;
 
 class board
-// Stores the entire Sudoku board
+	// Stores the entire Sudoku board
 {
 public:
 	board(int);
@@ -52,11 +52,12 @@ public:
 	void clearCell(int i, int j);
 	bool solvedBoard();
 
-	void solve(int i, int j);
+	bool solve();
 
 private:
-	// Added function
+	// Added functions
 	void updateConflicts(int i, int j, int num, bool val);
+	pair<int,int> findBlanks();
 
 	// The following matrices go from 1 to BoardSize in each
 	// dimension.  ie. they are each (BoardSize+1)x(BoardSize+1)
@@ -65,26 +66,29 @@ private:
 	matrix<bool> rows;		// matrix of each row conflict
 	matrix<bool> cols;		// matrix of each column conflict
 	matrix<bool> sqrs;		// matrix of each square conflict
+
+	bool solved;
+	int numRecursions;
 };
 
 board::board(int sqSize)
 	: value(BoardSize+1, BoardSize+1),
-	  rows(BoardSize+1, BoardSize+1),
-	  cols(BoardSize+1, BoardSize+1),
-	  sqrs(BoardSize+1, BoardSize+1)
-// Board constructor
+	rows(BoardSize+1, BoardSize+1),
+	cols(BoardSize+1, BoardSize+1),
+	sqrs(BoardSize+1, BoardSize+1)
+	// Board constructor
 {
 }
 
 void board::clearCell(int i, int j)
-// clear a cell in the sudoku board
+	// clear a cell in the sudoku board
 {
 	updateConflicts(i, j, value[i][j], 0);
 	value[i][j] = 0;
 } // clearCell
 
 void board::clear()
-// clear the sudoku board
+	// clear the sudoku board
 {
 	for (int i = 1; i < value.rows(); i++)
 	{
@@ -96,7 +100,7 @@ void board::clear()
 } // clear
 
 void board::initialize(ifstream &fin)
-// Read a Sudoku board from the input file.
+	// Read a Sudoku board from the input file.
 {
 	char ch;
 
@@ -126,8 +130,8 @@ void board::initialize(ifstream &fin)
 } // initialize
 
 int squareNumber(int i, int j)
-// Return the square number of cell i,j (counting from left to right,
-// top to bottom.  Note that i and j each go from 1 to BoardSize
+	// Return the square number of cell i,j (counting from left to right,
+	// top to bottom.  Note that i and j each go from 1 to BoardSize
 {
 	// Note that (int) i/SquareSize and (int) j/SquareSize are the x-y
 	// coordinates of the square that i,j is in.  
@@ -136,13 +140,13 @@ int squareNumber(int i, int j)
 }
 
 bool board::conflicts(int i, int j, int val)
-// check the row, column, and square for conflicts of a given value
+	// check the row, column, and square for conflicts of a given value
 {
 	return rows[i][val] || cols[j][val] || sqrs[squareNumber(i, j)][val];
 } // conflicts
 
 void board::updateConflicts(int i, int j, int num, bool val)
-// update each of the three possible conflict areas
+	// update each of the three possible conflict areas
 {
 	rows[i][num] = val;
 	cols[j][num] = val;
@@ -161,8 +165,8 @@ ostream &operator<<(ostream &ostr, vector<int> &v)
 }
 
 ValueType board::getCell(int i, int j)
-// Returns the value stored in a cell.  Throws an exception
-// if bad values are passed.
+	// Returns the value stored in a cell.  Throws an exception
+	// if bad values are passed.
 {
 	if (i >= 1 && i <= BoardSize && j >= 1 && j <= BoardSize)
 	{
@@ -175,14 +179,14 @@ ValueType board::getCell(int i, int j)
 } // getCell
 
 void board::setCell(int i, int j, int val)
-// set the value of the cell
+	// set the value of the cell
 {
 	value[i][j] = val;
 	updateConflicts(i, j, val, true);
 } // setCell
 
 bool board::isBlank(int i, int j)
-// Returns true if cell i,j is blank, and false otherwise.
+	// Returns true if cell i,j is blank, and false otherwise.
 {
 	if (i < 1 || i > BoardSize || j < 1 || j > BoardSize)
 	{
@@ -195,13 +199,13 @@ bool board::isBlank(int i, int j)
 } // isBlank
 
 bool board::solvedBoard()
-// check if the sudoku board is solved
+	// check if the sudoku board is solved
 {
 	for (int i = 1; i < value.rows(); i++)
 	{
 		for (int j = 1; j < value.cols(); j++)
 		{
-			if (value[i][j] == 0 || conflicts(i, j, value[i][j]))
+			if (isBlank(i,j) || conflicts(i, j, value[i][j]))
 			{
 				return false;
 			} // if
@@ -212,66 +216,88 @@ bool board::solvedBoard()
 	return true;
 } // solvedBoard
 
-void board::solve(int i=1, int j=1)
-// solve the sudoku board using recursion
+pair<int,int> board::findBlanks()
+	// find the first blank spot in the sudoku puzzle
+	// returns a pair of ints that are the indices
 {
-	if (i > BoardSize)
+	for (int i = MinValue; i <= MaxValue; i++)
 	{
-		done = true;
-		return;
-	}
-	if (!isBlank(i, j))
-	{
-		if (j < BoardSize)
+		for (int j = MinValue; j <= MaxValue; j++)
 		{
-			solve(i, j+1);
-		}
-		else
-		{
-			solve(i+1, 1);
-		}
-	}
-	if (done)
-	{ 
-		// print? do something? we shall see
-		return;
-	}
-	else
-	{
-		for (int num = MinValue; num < MaxValue+1; num++)
-		{
-			if (!conflicts(i, j, num))
+			if (isBlank(i, j))
 			{
-				setCell(i, j, num);
-				if (j < BoardSize)
-				{
-					solve(i, j+1);
-				}
-				else
-				{
-					solve(i+1, 1);
-				}
-				if (done) { return; }
-				clearCell(i, j);
+				pair<int,int> index (i, j);
+				return index;
 			} // if
 		} // for
-	} // if-else
+	} // for
+
+	pair<int,int> index (0, 0);
+	return index;
+} // findBlank
+
+bool board::solve()
+	// solve the sudoku board using recursion
+{
+	int num;
+
+	// check if the board is solved
+	if (solvedBoard())
+	{ 
+		// print? do something? we shall see
+		
+		return true;	// return true to unwind
+	}
+	// start solving the board
+	else 
+	{
+		// find the first blank spot in the matrix and set indices
+		pair<int,int> index = findBlanks();
+		int i = index.first;
+		int j = index.second;
+
+		// loop through numbers 1-9
+		for (num = MinValue; num <= MaxValue; num++)
+		{
+			// if there are no conflicts
+			if (!conflicts(i, j, num))
+			{
+				setCell(i, j, num);	// set cell as that number
+				
+				if (solve()) { /*return true;*/ }	// recursion
+			} // if
+		} // for
+		// if MaxValue number was reached and no numbers were placed
+		if (num == MaxValue) 
+		{ 
+			clearCell(i,j);	// clear current cell of number
+			return false;	// return false to continue searching
+		} // if
+	} // else
 } // solve
 
 
 void board::print()
-// Prints the current board.
+	// Prints the current board.
 {
+	cout << "+-";
+	for (int j = 1; j <= BoardSize; j++)
+	{
+		cout << "---";
+	}
+	cout << "-+";
+	cout << endl;
+
 	for (int i = 1; i <= BoardSize; i++)
 	{
-		if ((i-1) % SquareSize == 0)
+		if (i == 4 || i == 7)
 		{
-			cout << " -";
-			for (int j = 1; j <= BoardSize; j++)
+			cout << "|";
+			for (int j = 1; j < SquareSize; j++)
 			{
-				cout << "---";
+				cout << "---------+";
 			}
-			cout << "-";
+			cout << "---------|";
 			cout << endl;
 		} // if
 
@@ -294,17 +320,17 @@ void board::print()
 		cout << endl;
 	} // for
 
-	cout << " -";
+	cout << "+-";
 	for (int j = 1; j <= BoardSize; j++)
 	{
 		cout << "---";
 	} // for
-	cout << "-";
+	cout << "-+";
 	cout << endl;
 } // print
 
 void board::printConflicts()
-// print each of the conflict matrices side by side
+	// print each of the conflict matrices side by side
 {
 	// prints titles spaced correctly
 	cout << "Row Conflicts        ";
@@ -356,16 +382,14 @@ int main()
 		{
 			b1.initialize(fin);
 			b1.print();
-			b1.solve();
-			b1.print();
-			/*if (b1.solvedBoard())
+			if (b1.solve())
 			{
 				cout << "The board is solved.\n" << endl;
 			}
-			else if (! b1.solvedBoard())
+			else if (! b1.solve())
 			{
 				cout << "The board is not solved.\n" << endl;
-			}*/
+			}
 		}
 	}
 	catch  (rangeError &ex)
