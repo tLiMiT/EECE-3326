@@ -22,9 +22,9 @@ typedef int ValueType;		// The type of the value in a cell
 const int Blank = -1;		// Indicates that a cell is blank
 
 const int SquareSize = 3;	//  The number of cells in a small square
-//  (usually 3).  The board has
-//  SquareSize^2 rows and SquareSize^2
-//  columns.
+							//  (usually 3).  The board has
+							//  SquareSize^2 rows and SquareSize^2
+							//  columns.
 
 const int BoardSize = SquareSize * SquareSize;
 
@@ -33,6 +33,8 @@ const int MaxValue = 9;
 
 int numSolutions = 0;
 
+int totalCalls = 0;
+int numBoards = 0;
 
 class board
 	// Stores the entire Sudoku board
@@ -51,13 +53,16 @@ public:
 	void setCell(int i, int j, int val);
 	void clearCell(int i, int j);
 	bool solvedBoard();
+	int getCount() { return numRecursions; }
+	void clearCount() { numRecursions = 0; }
 
-	bool solve();
+	bool boardSolve();
 
 private:
 	// Added functions
 	void updateConflicts(int i, int j, int num, bool val);
-	pair<int,int> findBlanks();
+	int findBestBlank(int &i, int &j);
+	bool solve(int i, int j);
 
 	// The following matrices go from 1 to BoardSize in each
 	// dimension.  ie. they are each (BoardSize+1)x(BoardSize+1)
@@ -67,7 +72,6 @@ private:
 	matrix<bool> cols;		// matrix of each column conflict
 	matrix<bool> sqrs;		// matrix of each square conflict
 
-	bool solved;
 	int numRecursions;
 };
 
@@ -201,81 +205,94 @@ bool board::isBlank(int i, int j)
 bool board::solvedBoard()
 	// check if the sudoku board is solved
 {
-	for (int i = 1; i < value.rows(); i++)
+	for (int i = 1; i < BoardSize; i++)
 	{
-		for (int j = 1; j < value.cols(); j++)
+		for (int j = 1; j < BoardSize; j++)
 		{
-			if (isBlank(i,j) || conflicts(i, j, value[i][j]))
+			if (isBlank(i,j))
 			{
 				return false;
 			} // if
 		} // for
 	} // for
-	cout << endl;
-	print();			// print the solved board
 	return true;
 } // solvedBoard
 
-pair<int,int> board::findBlanks()
-	// find the first blank spot in the sudoku puzzle
-	// returns a pair of ints that are the indices
+int board::findBestBlank(int &x, int &y)
+	// find a blank spot in the sudoku puzzle
+	// returns a pair of ints that are the indices in the board
+	// that have the least amount of possible choices
 {
+	int maxConflicts = MaxValue;
+	int temp;
+
 	for (int i = MinValue; i <= MaxValue; i++)
 	{
 		for (int j = MinValue; j <= MaxValue; j++)
 		{
-			if (isBlank(i, j))
+			if (! isBlank(i, j)) { continue; }
+			temp = MaxValue;
+			for (int x = MinValue; x <= MaxValue; x++)
 			{
-				pair<int,int> index (i, j);
-				return index;
+				temp -= (rows[i][x] == 1); 
+				temp -= (cols[j][x] == 1); 
+				temp -= (sqrs[squareNumber(i, j)][x] == 1);
+			} // for
+
+			if (temp <= maxConflicts)
+			{
+				maxConflicts = temp;
+				x = i;
+				y = j;
 			} // if
 		} // for
 	} // for
+	return maxConflicts;
+} // findBestBlank
 
-	pair<int,int> index (0, 0);
-	return index;
-} // findBlank
-
-bool board::solve()
+bool board::solve(int i, int j)
 	// solve the sudoku board using recursion
 {
-	int num;
+	numRecursions++;	// increase the count every time solve() is called
+	
+	// initialize indices
+	int i1;
+	int j1;
 
-	// check if the board is solved
-	if (solvedBoard())
-	{ 
-		// print? do something? we shall see
-		
-		return true;	// return true to unwind
-	}
-	// start solving the board
-	else 
+	// loop through numbers 1-9
+	for (int num = MaxValue; num >= MinValue; num--)
 	{
-		// find the first blank spot in the matrix and set indices
-		pair<int,int> index = findBlanks();
-		int i = index.first;
-		int j = index.second;
-
-		// loop through numbers 1-9
-		for (num = MinValue; num <= MaxValue; num++)
+		// if there are no conflicts
+		if (! conflicts(i, j, num))
 		{
-			// if there are no conflicts
-			if (!conflicts(i, j, num))
+			setCell(i, j, num);		// set cell as that number
+
+			if (solvedBoard()) { return true; }
+
+			findBestBlank(i1, j1);	// find next best position
+
+			if (solve(i1, j1))		// recursion
 			{
-				setCell(i, j, num);	// set cell as that number
-				
-				if (solve()) { /*return true;*/ }	// recursion
+				return true;
 			} // if
-		} // for
-		// if MaxValue number was reached and no numbers were placed
-		if (num == MaxValue) 
-		{ 
-			clearCell(i,j);	// clear current cell of number
-			return false;	// return false to continue searching
+			else
+			{
+				clearCell(i,j);		// clear current cell of number
+				continue;
+			} // else
 		} // if
-	} // else
+	} // for
+	return false;
 } // solve
 
+bool board::boardSolve()
+	// handles solving the sudoku board
+{
+	int i;
+	int j;
+	findBestBlank(i, j);
+	return solve(i, j);
+} // boardSolve
 
 void board::print()
 	// Prints the current board.
@@ -360,6 +377,7 @@ void board::printConflicts()
 	} // for
 } // printConflicts
 
+// MAIN FUNCTION
 int main()
 {
 	ifstream fin;
@@ -380,22 +398,31 @@ int main()
 
 		while (fin && fin.peek() != 'Z')
 		{
+			numBoards++;
+
+			b1.clearCount();	// clear count for new round
+
 			b1.initialize(fin);
-			b1.print();
-			if (b1.solve())
+			cout << "\nSolving Board " << numBoards << "..." << endl;
+			b1.print();			// print loaded board
+
+			// solve the sudoku board
+			if (b1.boardSolve())
 			{
-				cout << "The board is solved.\n" << endl;
-			}
-			else if (! b1.solve())
-			{
-				cout << "The board is not solved.\n" << endl;
-			}
-		}
-	}
+				b1.print();		// print the solved board
+			} // if
+
+			cout << "Number of calls: " << b1.getCount() << endl;
+			totalCalls += b1.getCount();
+			
+		} // while
+
+		cout << "Average number of calls: " << totalCalls / numBoards << endl;
+
+	} // try
 	catch  (rangeError &ex)
 	{
 		cout << ex.what() << endl;
 		exit(1);
 	}
 } // main
-
