@@ -14,7 +14,7 @@
 #include <list>
 #include <fstream>
 #include <cstdlib>
-#include <utility>
+#include <time.h>
 
 using namespace std;
 
@@ -36,6 +36,9 @@ int numSolutions = 0;
 int totalCalls = 0;
 int numBoards = 0;
 
+int array[9][9]; 
+int outputArray[9][9]; 
+
 class board
 	// Stores the entire Sudoku board
 {
@@ -55,9 +58,11 @@ public:
 	bool solvedBoard();
 	int getCount() { return numRecursions; }
 	void clearCount() { numRecursions = 0; }
-
+	// 4b
 	bool boardSolve();
-
+	int input_value(int i, int j, int value);
+	int backtrack(int x, int y);
+	void printArray();
 private:
 	// Added functions
 	void updateConflicts(int i, int j, int num, bool val);
@@ -71,6 +76,8 @@ private:
 	matrix<bool> rows;		// matrix of each row conflict
 	matrix<bool> cols;		// matrix of each column conflict
 	matrix<bool> sqrs;		// matrix of each square conflict
+
+	matrix<int> output;		// output matrix
 
 	int numRecursions;
 };
@@ -124,10 +131,12 @@ void board::initialize(ifstream &fin)
 					throw rangeError("conflict on initialization");
 				}
 				setCell(i, j, ch-'0');	// Convert char to int
+				array[i-1][j-1] = ch-'0';
 			} 
 			else if (ch == '.')
 			{
 				setCell(i, j, 0);		// set cell to 0
+				array[i-1][j-1] = 0;
 			}// if - else if
 		} // for
 	} // for
@@ -294,6 +303,86 @@ bool board::boardSolve()
 	return solve(i, j);
 } // boardSolve
 
+int board::input_value(int i, int j, int value)
+	// does the heavy lifting for backtrack
+{
+	for (int k = 0; k < 9; k++)
+	{
+		if (outputArray[k][j] == value || outputArray[i][k] == value)
+		{
+			return 0;
+		} // if
+	} // for
+
+	int newi = (i / 3) * 3;
+	int newj = (j / 3) * 3;
+
+	for (int x = newi; x < newi+3; x++)
+	{
+		for (int y = newj; y < newj+3; y++)
+		{
+			if (outputArray[x][y] == value)
+			{
+				return 0;
+			} // if
+		} // for
+	} // for
+
+	return value;
+} // input_value
+
+int board::backtrack(int x, int y)
+	// solves the board using recursion
+	// ( uses ARRAY not MATRIX )
+{ 
+	numRecursions++;	// increase the count every time backtrack() is called
+	int i;
+
+	if (outputArray[x][y] == 0) 
+	{ 
+		for (i = 1; i < 10; i++) 
+		{ 
+			int temp = input_value(x, y, i); 
+
+			if (temp > 0) 
+			{ 
+				outputArray[x][y] = temp; 
+
+				if (x == 8 && y == 8) { return 1; } 
+				else if (x == 8) 
+				{ 
+					if (backtrack(0, y+1)) { return 1; }
+				} 
+				else 
+				{ 
+					if (backtrack(x+1, y)) { return 1; }
+				} 
+			} // if
+		} // for
+
+		if (i == 10) 
+		{ 
+			if (outputArray[x][y] != array[x][y]) 
+			{
+				outputArray[x][y] = 0;
+			}
+			return 0; 
+		} // if
+	} // if
+	else 
+	{ 
+		if (x == 8 && y == 8) { return 1; } 
+		else if (x == 8) 
+		{    
+			if (backtrack(0, y+1)) { return 1; }
+		} 
+		else 
+		{ 
+			if (backtrack(x+1, y)) { return 1; }
+		} 
+	} // else
+} // backtrack
+
 void board::print()
 	// Prints the current board.
 {
@@ -332,6 +421,51 @@ void board::print()
 			{
 				cout << "   ";
 			}
+		} // for
+		cout << "|";
+		cout << endl;
+	} // for
+
+	cout << "+-";
+	for (int j = 1; j <= BoardSize; j++)
+	{
+		cout << "---";
+	} // for
+	cout << "-+";
+	cout << endl;
+} // print
+
+void board::printArray()
+	// Prints the current board from the output array
+{
+	cout << "+-";
+	for (int j = 1; j <= BoardSize; j++)
+	{
+		cout << "---";
+	}
+	cout << "-+";
+	cout << endl;
+
+	for (int i = 1; i <= BoardSize; i++)
+	{
+		if (i == 4 || i == 7)
+		{
+			cout << "|";
+			for (int j = 1; j < SquareSize; j++)
+			{
+				cout << "---------+";
+			}
+			cout << "---------|";
+			cout << endl;
+		} // if
+
+		for (int j = 1; j <= BoardSize; j++)
+		{
+			if ((j-1) % SquareSize == 0)
+			{
+				cout << "|";
+			}
+			cout << " " << outputArray[i-1][j-1] << " ";
 		} // for
 		cout << "|";
 		cout << endl;
@@ -394,22 +528,35 @@ int main()
 
 	try
 	{
+		time_t start, end;
+		double diff;
+		time (&start);
+
 		board b1(SquareSize);
 
 		while (fin && fin.peek() != 'Z')
 		{
 			numBoards++;
 
-			b1.clearCount();	// clear count for new round
+			b1.clearCount();		// clear count for new round
 
 			b1.initialize(fin);
+
+			for (int i = 0; i < 9; i++) 
+			{ 
+				for (int j = 0; j < 9; j++) 
+				{ 
+					outputArray[i][j] = array[i][j]; 
+				} // for
+			} // for 
+
 			cout << "\nSolving Board " << numBoards << "..." << endl;
-			b1.print();			// print loaded board
+			b1.print();				// print loaded board
 
 			// solve the sudoku board
-			if (b1.boardSolve())
+			if (b1.backtrack(0, 0))
 			{
-				b1.print();		// print the solved board
+				b1.printArray();	// print the solved board
 			} // if
 
 			cout << "Number of calls: " << b1.getCount() << endl;
@@ -418,7 +565,10 @@ int main()
 		} // while
 
 		cout << "Average number of calls: " << totalCalls / numBoards << endl;
-
+		
+		time (&end);
+		diff = difftime(end, start);
+		printf("Runtime: %.2f minutes.\n", diff/60);
 	} // try
 	catch  (rangeError &ex)
 	{
