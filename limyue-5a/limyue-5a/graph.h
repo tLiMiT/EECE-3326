@@ -387,7 +387,7 @@ graph &graph::operator=(const graph &g)
    node tempNode;       
    tempNode.setId(0);
 
-   nodes.resize(g.numNodes(),tempNode);
+   nodes.resize(g.numNodes(), tempNode);
    edges.resize(g.numNodes(), g.numNodes());
 
    // Copy the nodes.
