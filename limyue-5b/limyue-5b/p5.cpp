@@ -15,6 +15,8 @@
 #include "d_matrix.h"
 #include "graph.h"
 #include <utility>
+#include <queue>
+#include <map>
 
 using namespace std;
 
@@ -44,8 +46,8 @@ public:
 	void printPath();
 	vector<int> getNeighbors(int id, graph &g);
 
-	void findShortestPath1();
-	void findShortestPath2();
+	bool findShortestPath1(graph &g, int start, int end);	// DFS
+	bool findShortestPath2(graph &g, int start, int end);	// BFS
 
 private:
 	int rows;		// number of rows in the maze
@@ -54,7 +56,7 @@ private:
 	matrix<bool> value;
 
 	// Added members
-	matrix<int> map;
+	matrix<int> mapM;
 	vector<pair<int,int>> nodeVect;
 	vector<int> path;
 	bool foundPath;
@@ -63,7 +65,7 @@ private:
 void maze::setMap(int i, int j, int n)
 	// Set mapping from maze cell (i,j) to graph node n. 
 {
-	map[i][j] = n;
+	mapM[i][j] = n;
 	nodeVect[n].first = i; 
 	nodeVect[n].second = j;
 } // setMap
@@ -71,7 +73,7 @@ void maze::setMap(int i, int j, int n)
 int maze ::getMap(int i, int j) const
 	// Return mapping of maze cell (i,j) in the graph.
 {
-	return map[i][j];
+	return mapM[i][j];
 } // getMap
 
 int maze ::getReverseMapI(int n) const
@@ -96,7 +98,7 @@ maze::maze(ifstream &fin)
 	char x;
 
 	value.resize(rows, cols);
-	map.resize(rows, cols);
+	mapM.resize(rows, cols);
 	nodeVect.resize(rows * cols);
 
 	for (int i = 0; i <= rows-1; i++)
@@ -243,7 +245,7 @@ void maze::findPathNonRecursive(graph &g, int start, int end)
 	// looks for a path from the start cell to the goal cell using 
 	// depth-first search. (No Recursion)
 {
-	// clear node marks and visits from recursive call
+	// clear node marks and visits from recursive findPath call
 	g.clearVisit();
 	g.clearMark();
 
@@ -317,7 +319,7 @@ void maze::printPath()
 	}
 	else
 	{
-		int top;
+		int curr;
 		int prev = 0;
 		int ip, jp, i, j;
 		int count = 0;
@@ -325,32 +327,187 @@ void maze::printPath()
 		while (!path.empty())
 		{
 			count++;
-			top = path.back();
+			curr = path.back();
 
-			ip = getReverseMapI(prev);
-			jp = getReverseMapJ(prev);
-			i = getReverseMapI(top);
-			j = getReverseMapJ(top);
+			ip = getReverseMapI(prev);	// previous i 
+			jp = getReverseMapJ(prev);	// previous j
+			i = getReverseMapI(curr);	// current i
+			j = getReverseMapJ(curr);	// current j
 
 			if (ip < i) { cout << "Go Down" << endl; }
 			else if (ip > i) { cout << "Go Up" << endl; }
 			else if (jp < j) { cout << "Go Right" << endl; }
 			else if (jp > j) { cout << "Go Left" << endl; }
 
-			print(numRows()-1, numCols()-1, i, j);
+			print(rows-1, cols-1, i, j);
 
 			path.pop_back();
-			prev = top;
+			prev = curr;
 		} // while
 		cout << "Path length: " << count << endl;
 	} // else
 } // printPath
 
+bool maze::findShortestPath1(graph &g, int start, int end)
+	// Uses DFS to find the shortest in the maze
+{
+	// clear node marks and visits
+	g.clearVisit();
+	g.clearMark();
+
+	vector<stack<int>> paths;
+	stack<int> st;
+	stack<edge> edges;
+	stack<int> pathS;
+
+	st.push(start);
+
+	// find the path
+	while (!st.empty())
+	{
+		int top = st.top();
+
+		// make sure we don't get stuck
+		while (!edges.empty() && pathS.top() != edges.top().getSource())
+		{
+			pathS.pop();
+		}
+
+		pathS.push(top);
+
+		if (!edges.empty())
+		{
+			edges.pop();
+		}
+
+		st.pop();
+		g.visit(top);
+
+		if (top == end)
+		{   
+			paths.push_back(pathS);
+		}
+
+		vector<int> lst = getNeighbors(top, g);
+
+		for (int i = 0; i < lst.size(); i++)
+		{
+			if (!g.isVisited(lst[i]))
+			{
+				st.push(lst[i]);
+				edges.push(g.getEdge(top, lst[i]));
+			} // if
+		} // for
+	} // while
+
+	// extract the path
+	stack<int> reverse_path;
+
+	for (int i = 0; i < paths.size(); i++)
+	{
+		if (paths[i].size() > reverse_path.size())
+		{
+			reverse_path = paths[i];
+		}
+	} // for
+
+	// push values into vector for printing
+	while (!reverse_path.empty())
+	{
+		int top = reverse_path.top();
+		reverse_path.pop();
+
+		if (g.isVisited(top))
+		{
+			path.push_back(top);
+		}
+	} // while
+
+	if (path.empty()) { return false; }
+	else { return true;}
+} // findShortestPath1
+
+bool maze::findShortestPath2(graph &g, int start, int end)
+	// Uses BFS to find the shortest in the maze
+{
+	// clear path
+	clearPath();
+
+	// clear node marks and visits
+	g.clearVisit();
+	g.clearMark();
+
+	queue<int> q;
+	stack<int> pathS;
+	map<int,int> edges;
+	q.push(start);
+	bool found = false;
+
+	while (!q.empty())
+	{
+		int top = q.front();
+		q.pop();
+
+		if (top == end)
+		{
+			found = true;
+			pathS.push(end);
+			break;
+		}
+
+		g.visit(top);
+
+		vector<int> lst = getNeighbors(top, g);
+
+		for (int i = 0; i < lst.size(); i++)
+		{
+			if (!g.isVisited(lst[i]))
+			{
+				q.push(lst[i]);
+				edges.insert(pair<int,int>(lst[i], top));
+			}
+		} // for
+	} // while
+
+	// start backtracking
+	int curr = end;
+
+	while (found && curr != start)
+	{
+		curr = edges.find(curr)->second;
+		pathS.push(curr);
+	} // while
+	
+    // push values into vector for printing
+	vector<int> revPath;
+
+	while (!pathS.empty())
+	{
+		int top = pathS.top();
+		pathS.pop();
+
+		if (g.isVisited(top))
+		{
+			revPath.push_back(top);
+		}
+	} // while
+
+	// reverse path
+	path.push_back(getMap(rows-1, cols-1));
+	for (int i = revPath.size(); i > 0; i--)
+	{
+		path.push_back(revPath.back());
+		revPath.pop_back();
+	} // for
+
+	if (path.empty()) { return false; }
+	else { return true;}
+} // findShortestPath2
+
 
 // MAIN FUNCTION
 int main()
 {
-	char x;
 	ifstream fin;
 
 	// Read the maze from the file.
@@ -370,22 +527,19 @@ int main()
 		{
 			maze m(fin);
 			m.mapMazeToGraph(g);
-			m.clearFoundPath();
-			g.clearVisit();
-			g.clearMark();
 
 			int start = m.getMap(0, 0);
-			int end = m.getMap(m.numRows()-1, m.numCols()-1);
+			int goal = m.getMap(m.numRows()-1, m.numCols()-1);
 
-			// recursive
-			m.findPathRecursive(g, start, end);
-			m.printPath();
+			// findShortestPath1
+			if (m.findShortestPath1(g, start, goal)) { m.printPath(); }
+			else { cout << "No path found." << endl; }
 
 			cout << "\n|||||||||||||||||||||||||||||\n" << endl;
 
-			// non recursive
-			m.findPathNonRecursive(g, start, end);
-			m.printPath();
+			// findShortestPath2
+			if (m.findShortestPath2(g, start, goal)) { m.printPath(); }
+			else { cout << "No path found." << endl; }
 		}
 	} 
 	catch (indexRangeError &ex) 
