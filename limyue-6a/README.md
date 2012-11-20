@@ -35,14 +35,14 @@ that the cost of a legal solution is not necessarily minimized.
 
 Write the following functions:
 
-   void findSpanningForest(graph &g1, graph &sf)
-   // Create a graph sf that contains a spanning forest on the graph g.
+    void findSpanningForest(graph &g1, graph &sf)
+    // Create a graph sf that contains a spanning forest on the graph g.
 
-   bool isConnected(graph &g)
-   // Returns true if the graph g is connected. Otherwise returns false.
+    bool isConnected(graph &g)
+    // Returns true if the graph g is connected. Otherwise returns false.
 
-   bool isCyclic(graph &g)
-   // Returns true if the graph g contains a cycle. Otherwise, returns false.
+    bool isCyclic(graph &g)
+    // Returns true if the graph g contains a cycle. Otherwise, returns false.
 
 Functions to read a set of edges and weights from a file are included as part of the assignment.
 Several input files are also included. Each input file begins with a number of nodes, a number
