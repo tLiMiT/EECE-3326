@@ -349,7 +349,7 @@ void maze::printPath()
 } // printPath
 
 bool maze::findShortestPath1(graph &g, int start, int end)
-	// Uses DFS to find the shortest in the maze
+	// Uses DFS to find the shortest path in the maze
 {
 	// clear node marks and visits
 	g.clearVisit();
@@ -428,7 +428,7 @@ bool maze::findShortestPath1(graph &g, int start, int end)
 } // findShortestPath1
 
 bool maze::findShortestPath2(graph &g, int start, int end)
-	// Uses BFS to find the shortest in the maze
+	// Uses BFS to find the shortest path in the maze
 {
 	// clear path
 	clearPath();
