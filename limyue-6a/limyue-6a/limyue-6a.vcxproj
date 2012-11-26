@@ -64,7 +64,7 @@
   <ItemGroup>
     <ClInclude Include="d_except.h" />
     <ClInclude Include="d_matrix.h" />
-    <ClInclude Include="graph.h" />
+    <ClInclude Include="graph(2).h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="KeepConsoleOpenAfterMain.cpp" />

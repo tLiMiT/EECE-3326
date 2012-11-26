@@ -15,7 +15,7 @@
 #include <list>
 #include <fstream>
 #include "d_matrix.h"
-#include "graph.h"
+#include "graph(2).h"
 #include <queue>
 #include <vector>
 
@@ -27,12 +27,11 @@ int const NONE = -1;  // Used to represent a node that does not exist
 void visitNodes(int start, graph &g)
 	// Visit all nodes reachable from the start node
 {
-	bool found;
+	bool found = false;
 
 	// Mark the start node as visited.
 	g.visit(start);
 
-	found = false;
 	int v = 0;
 
 	// Keep looking for legal moves as long as there are more neighbors
@@ -49,23 +48,75 @@ void visitNodes(int start, graph &g)
 	}
 } // visitNodes
 
+vector<int> getNeighbors(int id, graph &g)
+	// get all neighbors of the node (id) in the graph (g)
+{
+	vector<int> lst;
+
+	for (int i = 0; i < g.numNodes(); i++)
+	{
+		if (g.isEdge(id, i))
+		{
+			lst.push_back(i);
+		}
+	} // for
+	return lst;
+} // getNeighbors
+
+void findCycle(int curr, int start, bool &found, graph &g)
+	// checks for cycles in a graph
+{
+	g.mark(curr);
+
+	vector<int> lst = getNeighbors(curr, g);
+
+	for (int i = 0; i < lst.size(); i++)
+	{
+		if (start == lst[i])
+		{
+			continue;
+		}
+		if (g.isMarked(lst[i]))
+		{
+			found = true;
+		}
+		else if (!g.isVisited(lst[i]))
+		{
+			findCycle(lst[i], curr, found, g);
+		}
+	} // for
+
+	g.unMark(curr);
+	g.visit(curr);
+
+} // findCycle
+
 // Project Functions
 bool isCyclic(graph &g)
 	// Returns true if the graph g contains a cycle.  Otherwise, returns false.
 {
-	return false;
+	g.clearVisit();
+	g.clearMark();
+
+	bool cycle = false;
+
+	for (int i = 0; i < g.numNodes(); i++)
+	{
+		if (!g.isVisited(i))
+			findCycle(i, i, cycle, g);
+	}
+
+	g.clearMark();
+	g.clearVisit();
+
+	return cycle;
 } // isCyclic
-
-void findSpanningForest(graph &g, graph &sf)
-	// Create a graph sf that contains a spanning forest on the graph g.
-{
-
-} // findSpanningForest
 
 bool isConnected(graph &g)
 	// Returns true if the graph g is connected.  Otherwise returns false.
 {
 	g.clearVisit();
+	g.clearMark();
 
 	visitNodes(0, g);	// start at '0' the 'first' node
 
@@ -79,11 +130,46 @@ bool isConnected(graph &g)
 	return true;
 } // isConnected
 
+void findSpanningForest(graph &g, graph &sf)
+	// Create a graph sf that contains a spanning forest on the graph g.
+{
+	if (isConnected(g) && !isCyclic(g))
+	{
+		sf = g;
+	}
+	else
+	{
+		// add nodes to sf
+		for (int i = 0; i < g.numNodes(); i++)
+		{
+			sf.addNode(g.getNode(i));
+		}
+
+		// build sf
+		for (int i = 0; i < g.numNodes(); i++)
+		{
+			for (int j = 0; j < g.numNodes(); j++)
+			{
+				if (g.isEdge(i, j) && !sf.isEdge(i, j))
+				{
+					sf.addEdge(i, j, g.getEdgeWeight(i, j));
+					sf.addEdge(j, i, g.getEdgeWeight(j, i));
+
+					if(isCyclic(sf))
+					{
+						sf.removeEdge(j, i);
+						sf.removeEdge(i, j);
+					} // if
+				} // if
+			} // for
+		} // for
+	} // else
+} // findSpanningForest
+
 
 // MAIN FUNCTION
 int main()
 {
-	char x;
 	ifstream fin;
 	stack <int> moves;
 	string fileName;
@@ -91,10 +177,11 @@ int main()
 	// Read the name of the graph from the keyboard or
 	// hard code it here for testing.
 
-	fileName = "graph1.txt";
+	// fileName = "graph1.txt";
 
-	//   cout << "Enter filename" << endl;
-	//   cin >> fileName;
+	cout << "Enter filename: ";
+	cin >> fileName;
+	cout << endl;
 
 	fin.open(fileName.c_str());
 	if (!fin)
@@ -132,7 +219,7 @@ int main()
 		cout << "Finding spanning forest" << endl;
 
 		// Initialize an empty graph to contain the spanning forest
-		graph sf(g.numNodes());
+		graph sf;//(g.numNodes());
 		findSpanningForest(g,sf);
 
 		cout << endl;
