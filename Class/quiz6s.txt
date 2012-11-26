@@ -1,0 +1,66 @@
+Solutions to Quiz #6
+--------------------
+
+1)
+
+The partition function sets the pivot s equal to the leftmost item in
+the vector.  
+
+The vector is rearranged such that s is in its correct, sorted
+position in the vector.  That is, the vector is rearranged such that
+all entries to the left of s are less than or equal to s, and all
+entries to the right of s are greater than or equal to s.  
+
+The function returns the index of s in the partitioned vector.
+
+2)
+
+quicksort(0,8):         44 75 12 43 70 23 85 55 33
+partition(0,8)
+s = 44
+swap 75/33:             44 33 12 43 70 23 85 55 75
+swap 77/23:             44 33 12 43 23 70 85 55 75
+swap pivot into place:  23 33 12 43 44 70 85 55 75
+
+quicksort(0,3):         23 33 12 43
+partition(0,3)
+s = 23
+swap 33/12:             23 12 33 43
+swap pivot into place:  12 23 33 43
+
+quicksort(0,1):         12 23
+partition(0,1)          12 23
+s = 12
+
+quicksort(3,3):                  43
+partition(3,3)                   43
+s = 43                 
+
+quicksort(5,8):                        70 85 55 75
+partition(5,8)
+s = 70
+swap 85/55                             70 55 85 75
+swap pivot into place                  55 70 85 75
+
+quicksort(5,5)                         55
+partition(5,5)                         55
+s = 5
+
+quicksort(7,8)                               85 75
+partition(7,8)
+s = 85
+swap pivot into place                        75 85
+
+
+3) 
+   Best case: the pivot's value divides each array in half.
+
+   Worst case: the pivot's value is the largest or smallest value.  in
+   the array, so the size of the array decreases by only 1 on each
+   call to quicksort.
+
+
+
+
+
+
