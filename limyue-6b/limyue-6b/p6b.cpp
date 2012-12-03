@@ -1,5 +1,5 @@
 // EECE 3326
-// Project 6, a
+// Project 6, b
 //
 // Tim Liming
 // Wing Tung Yuen
@@ -15,7 +15,7 @@
 #include <list>
 #include <fstream>
 #include "d_matrix.h"
-#include "graph(2).h"
+#include "graph.h"
 #include <queue>
 #include <vector>
 
@@ -166,6 +166,93 @@ void findSpanningForest(graph &g, graph &sf)
 	} // else
 } // findSpanningForest
 
+class CompareEdge
+	// returns true if edge1 is greater than edge2
+{
+public:
+	bool operator() (edge &e1, edge &e2)
+	{
+		return e2.getWeight() < e1.getWeight();
+	}
+};
+
+void findMSF(graph &g, graph &sf, int start)
+	// finds a minimum spanning tree in graph 'g'
+{
+	priority_queue<edge, vector<edge>, CompareEdge> pq;
+	vector<int> lst = getNeighbors(start, g);
+
+	// build our priority queue
+	for (int i = 0; i < lst.size(); i++)
+	{
+		pq.push(g.getEdge(start, lst[i]));
+		g.mark(start, lst[i]);
+	}
+
+	// visit the start node
+	g.visit(start);
+
+	int src, dst, w;
+	edge top;
+
+	while (!pq.empty())
+	{
+		top = pq.top();
+		pq.pop();
+		src = top.getSource();
+		dst = top.getDest();
+		w = top.getWeight();
+
+		// add edges
+		if (!sf.isEdge(src, dst))
+		{
+			sf.addEdge(src, dst, w);
+			sf.addEdge(dst, src, w);
+
+			// delete edges if we make a cycle
+			if (isCyclic(sf))
+			{
+				sf.removeEdge(src, dst);
+				sf.removeEdge(dst, src);
+			}
+			else
+			{
+				g.visit(src);
+				lst = getNeighbors(dst, g);
+
+				for (int i = 0; i < lst.size(); i++)
+				{
+					if (!g.isMarked(dst, lst[i]))
+					{
+						pq.push(g.getEdge(dst, lst[i]));
+						g.mark(dst, lst[i]);
+					}
+				} // for
+			} // else
+		} // if
+	} // while
+} // findMSF
+
+void prim(graph &g, graph &msf)
+	// Given a weighted graph g, sets msf equal to a minimum spanning
+	// forest on g. Uses Prim's algorithm.
+{
+	// build msf
+	for (int i = 0; i < g.numNodes(); i++)
+	{
+		msf.addNode(g.getNode(i));
+	}
+
+	// populate msf using findMSF
+	for (int i = 0; i < g.numNodes(); i++)
+	{
+		if (!g.isVisited(i))
+		{
+			findMSF(g, msf, i);
+		}
+	}
+} // prim
+
 
 // MAIN FUNCTION
 int main()
@@ -177,11 +264,11 @@ int main()
 	// Read the name of the graph from the keyboard or
 	// hard code it here for testing.
 
-	// fileName = "graph1.txt";
+	fileName = "graph4.txt";
 
-	cout << "Enter filename: ";
-	cin >> fileName;
-	cout << endl;
+	// cout << "Enter filename: ";
+	// cin >> fileName;
+	// cout << endl;
 
 	fin.open(fileName.c_str());
 	if (!fin)
@@ -219,12 +306,15 @@ int main()
 		cout << "Finding spanning forest" << endl;
 
 		// Initialize an empty graph to contain the spanning forest
-		graph sf;//(g.numNodes());
-		findSpanningForest(g,sf);
+		graph sf;
+		findSpanningForest(g, sf);
+
+		graph msf;
+		prim(g, msf);
 
 		cout << endl;
 
-		cout << sf;
+		cout << msf;
 
 		cout << "Spanning forest weight: " << sf.getTotalEdgeWeight()/2 << endl;
 
@@ -242,6 +332,9 @@ int main()
 			cout << "Graph does not contain a cycle" << endl;
 
 		cout << endl;
+
+		cout << "Minimum Cost: " << msf.getTotalEdgeWeight()/2 << endl;
+		cout << "Difference: " << sf.getTotalEdgeWeight()/2 - msf.getTotalEdgeWeight()/2 << endl;
 	}    
 	catch (indexRangeError &ex) 
 	{ 
