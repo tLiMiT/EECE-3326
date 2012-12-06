@@ -15,21 +15,24 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\a\limyue-1a\limyue-1a\d_random.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="1b.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="d_except.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="1a.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="d_random.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\a\limyue-1a\limyue-1a\KeepConsoleOpenAfterMain.cpp">
+    <ClCompile Include="program.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="program.cpp">
+    <ClCompile Include="KeepConsoleOpenAfterMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
